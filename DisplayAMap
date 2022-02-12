@@ -12,7 +12,7 @@
         esriConfig.apiKey = "AAPKfbfb81958377403ba425701808eb5a73uV2eLfGEdIvOF23QM8FhG6NIncrJGGRSxyzgKd_DNgId0llRGlxVF20xKOiPgFz8";
         
         const map = new Map({
-          basemap: "arcgis-topographic" // Basemap layer
+           basemap: "arcgis-topographic" // Basemap layer
         });
         const view = new MapView({
           map: map,
