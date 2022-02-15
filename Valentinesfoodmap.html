@@ -1,0 +1,104 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Restaurants to go to for valintines day in Regina</title>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.22/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.22/"></script>
+
+    <script>
+      require(["esri/config","esri/Map", "esri/views/MapView","esri/rest/locator","esri/Graphic"], function (esriConfig,Map, MapView,locator,Graphic) {
+
+        esriConfig.apiKey = "AAPKfbfb81958377403ba425701808eb5a73uV2eLfGEdIvOF23QM8FhG6NIncrJGGRSxyzgKd_DNgId0llRGlxVF20xKOiPgFz8";
+
+        const map = new Map({
+            basemap: "arcgis-navigation" // Basemap layer service
+        });
+
+        const view = new MapView({
+          map: map,
+          center: [-104.6189, 50.4452], // Longitude, latitude
+          zoom: 12, // Zoom level
+          container: "viewDiv" // Div element
+        });
+        const places = ["Choose a restaurant type...", "Sushi", "Steak House", "Italian Food", "Ice Cream Shop", "Chinese Food","Indian Food","Mexican Food","Breakfast","Fast Food"];
+        const select = document.createElement("select","");
+            select.setAttribute("class", "esri-widget esri-select");
+            select.setAttribute("style", "width: 175px; font-family: 'Avenir Next W00'; font-size: 1em");     
+    
+        places.forEach(function(p){
+            const option = document.createElement("option");
+            option.value = p;
+            option.innerHTML = p;
+            select.appendChild(option);
+        });
+        
+        view.ui.add(select, "top-left");
+        const locatorUrl = "http://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer";
+
+           // Find places and add them to the map
+        function findPlaces(category, pt) {
+            locator.addressToLocations(locatorUrl, {
+                location: pt,
+                categories: [category],
+                maxLocations: 30,
+                outFields: ["Place_addr", "PlaceName"]
+            })
+
+            .then(function(results) {
+                view.popup.close();
+                view.graphics.removeAll();
+                results.forEach(function(result){
+                    view.graphics.add(
+                        new Graphic({
+                            attributes: result.attributes,  // Data attributes returned
+                            geometry: result.location, // Point returned
+                            symbol: {
+                                type: "simple-marker",
+                                color: "red",
+                                size: "14px",
+                                outline: {
+                                    color: "darkred",
+                                    width: "2px"
+                                }
+                            },
+
+                            popupTemplate: {
+                                title: "{PlaceName}", // Data attribute names
+                                content: "{Place_addr}",
+                            }
+                        }));
+                });
+            });
+        }
+
+    // Search for places in center of map
+    view.watch("stationary", function(val) {
+        if (val) {
+        findPlaces(select.value, view.center);
+        }
+        });
+    // Listen for category changes and find places
+    select.addEventListener('change', function (event) {
+        findPlaces(event.target.value, view.center);
+    })
+});
+    </script>
+
+  </head>
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
